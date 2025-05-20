@@ -54,6 +54,8 @@ public class Damas {
         Scanner scanner = new Scanner(System.in);
         char colorJugador = elegirColor(scanner);
         System.out.println("Has elegido jugar con las fichas " + (colorJugador == 'B' ? "BLANCAS" : "NEGRAS"));
+        System.out.println("Formato para mover: H3 a G4");
+        System.out.println("Escribe 'salir' para terminar.");
         System.out.println(VERDE+"El juego comienza..."+RESET);
         
         final JugarDamas[] juego = new JugarDamas[1];
@@ -66,8 +68,16 @@ public class Damas {
             try { Thread.sleep(100); } catch (InterruptedException e) {}
         }
 
-        System.out.println("Formato para mover: H3 a G4");
-        System.out.println("Escribe 'salir' para terminar.");
+        // Si jugador es negro, computadora hace el primer movimiento
+        if (colorJugador == 'N') {
+            System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            String movimientoComputadora = juego[0].moverComputadora();
+            if (movimientoComputadora != null) {
+                System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
+            } else {
+                System.out.println(ROJO+"Computadora no pudo mover."+RESET);
+            }
+        }
 
         while (true) {
             System.out.print("Tu movimiento: ");
@@ -94,7 +104,14 @@ public class Damas {
 
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             try { Thread.sleep(1000); } catch (InterruptedException e) {}
-            juego[0].moverComputadora();
+
+            String movimientoComputadora = juego[0].moverComputadora();
+            if (movimientoComputadora != null) {
+                System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
+            } else {
+                System.out.println(ROJO+"Computadora no pudo mover."+RESET);
+            }            
+            
         }
 
     }

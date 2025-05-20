@@ -101,7 +101,7 @@ public class JugarDamas extends JFrame{
         return true;
     }
 
-    public void moverComputadora() {
+    public String moverComputadora() {
         // Mueve la primera pieza que encuentre hacia adelante si puede
         char colorPC = (colorJugador == 'B') ? 'N' : 'B';
         int direccion = (colorPC == 'B') ? -1 : 1;
@@ -115,18 +115,25 @@ public class JugarDamas extends JFrame{
                             tablero[nuevaFila][col - 1] = colorPC;
                             tablero[fila][col] = '*';
                             actualizarVista();
-                            return;
+                            return coordToString(fila, col) + " a " + coordToString(nuevaFila, col - 1);
                         }
                         if (col < 7 && tablero[nuevaFila][col + 1] == '*') {
                             tablero[nuevaFila][col + 1] = colorPC;
                             tablero[fila][col] = '*';
                             actualizarVista();
-                            return;
+                            return coordToString(fila, col) + " a " + coordToString(nuevaFila, col + 1);
                         }
                     }
                 }
             }
         }
+        return null;
+    }
+
+    private String coordToString(int fila, int col) {
+        char letra = (char)('A' + col);
+        int numero = 8 - fila;
+        return "" + letra + numero;
     }
 
     private int[] convertirCoord(String input) {
