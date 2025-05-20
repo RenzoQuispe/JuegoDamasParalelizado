@@ -2,6 +2,14 @@ import java.util.Scanner;
 import javax.swing.SwingUtilities;
 
 public class Damas {
+ 
+    //Colores
+    public static final String RESET = "\u001B[0m";
+    public static final String ROJO = "\u001B[31m";
+    public static final String VERDE = "\u001B[32m";
+    public static final String AZUL = "\u001B[34m";
+    public static final String CELESTE = "\u001B[36m";
+
 
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equals("-help") || args[0].equals("-h")) {
@@ -46,14 +54,51 @@ public class Damas {
         Scanner scanner = new Scanner(System.in);
         char colorJugador = elegirColor(scanner);
         System.out.println("Has elegido jugar con las fichas " + (colorJugador == 'B' ? "BLANCAS" : "NEGRAS"));
-        System.out.println("El juego comienza...");
+        System.out.println(VERDE+"El juego comienza..."+RESET);
+        
+        final JugarDamas[] juego = new JugarDamas[1];
         SwingUtilities.invokeLater(() -> {
-            new JugarDamas(colorJugador);
+            juego[0] = new JugarDamas(colorJugador);
         });
-        System.out.println("¡Juego Iniciado!");
 
+        // Esperar a que la GUI esté lista
+        while (juego[0] == null) {
+            try { Thread.sleep(100); } catch (InterruptedException e) {}
+        }
+
+        System.out.println("Formato para mover: H3 a G4");
+        System.out.println("Escribe 'salir' para terminar.");
+
+        while (true) {
+            System.out.print("Tu movimiento: ");
+            String linea = scanner.nextLine().trim();
+            if (linea.equalsIgnoreCase("salir")) {
+                System.out.println("Juego terminado.");
+                break;
+            }
+
+            String[] partes = linea.split("a");
+            if (partes.length != 2) {
+                System.out.println(ROJO+"Formato inválido. Usa 'H3 a G4'"+RESET);
+                continue;
+            }
+
+            String origen = partes[0].trim();
+            String destino = partes[1].trim();
+
+            boolean exito = juego[0].moverJugador(origen, destino);
+            if (!exito) {
+                System.out.println(ROJO+"Movimiento inválido."+RESET);
+                continue;
+            }
+
+            System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            juego[0].moverComputadora();
+        }
 
     }
+
     private static char elegirColor(Scanner scanner) {
         char eleccion;
         while (true) {

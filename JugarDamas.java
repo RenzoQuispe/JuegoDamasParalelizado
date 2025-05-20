@@ -5,7 +5,7 @@ public class JugarDamas extends JFrame{
 
     private char colorJugador;
     private char[][] tablero = new char[8][8];
-
+    
     public JugarDamas(char colorJugador) {
         
         this.colorJugador = colorJugador;
@@ -58,7 +58,7 @@ public class JugarDamas extends JFrame{
                 for (int col = 0; col < 8; col++) {
                     sb.append("[").append(tablero[fila][col]).append("]");
                 }
-                sb.append(" ").append(fila + 1).append("\n");
+                sb.append(" ").append(8 - fila).append("\n");
             }
             sb.append("  ");
             for (char c = 'A'; c <= 'H'; c++) {
@@ -72,7 +72,7 @@ public class JugarDamas extends JFrame{
                 for (int col = 7; col >= 0; col--) {
                     sb.append("[").append(tablero[fila][col]).append("]");
                 }
-                sb.append(" ").append(fila + 1).append("\n");
+                sb.append(" ").append(8 -fila).append("\n");
             }
             sb.append("  ");
             for (char c = 'H'; c >= 'A'; c--) {
@@ -81,5 +81,72 @@ public class JugarDamas extends JFrame{
             sb.append("\n");
         }
         return sb.toString();
+    }
+    public boolean moverJugador(String origen, String destino) {
+        int[] o = convertirCoord(origen);
+        int[] d = convertirCoord(destino);
+
+        if (o == null || d == null) {
+            return false;
         }
+
+        if (tablero[o[0]][o[1]] != colorJugador || tablero[d[0]][d[1]] != '*') {
+            return false;
+        }
+
+        // Movimiento válido simple (sin captura por ahora)
+        tablero[d[0]][d[1]] = colorJugador;
+        tablero[o[0]][o[1]] = '*';
+        actualizarVista();
+        return true;
+    }
+
+    public void moverComputadora() {
+        // Mueve la primera pieza que encuentre hacia adelante si puede
+        char colorPC = (colorJugador == 'B') ? 'N' : 'B';
+        int direccion = (colorPC == 'B') ? -1 : 1;
+
+        for (int fila = 0; fila < 8; fila++) {
+            for (int col = 0; col < 8; col++) {
+                if (tablero[fila][col] == colorPC) {
+                    int nuevaFila = fila + direccion;
+                    if (nuevaFila >= 0 && nuevaFila < 8) {
+                        if (col > 0 && tablero[nuevaFila][col - 1] == '*') {
+                            tablero[nuevaFila][col - 1] = colorPC;
+                            tablero[fila][col] = '*';
+                            actualizarVista();
+                            return;
+                        }
+                        if (col < 7 && tablero[nuevaFila][col + 1] == '*') {
+                            tablero[nuevaFila][col + 1] = colorPC;
+                            tablero[fila][col] = '*';
+                            actualizarVista();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int[] convertirCoord(String input) {
+        input = input.toUpperCase().trim();
+        if (input.length() != 2) return null;
+
+        char letra = input.charAt(0);
+        char numero = input.charAt(1);
+
+        int col = letra - 'A';
+        int fila = 8 - Character.getNumericValue(numero);
+
+        if (col < 0 || col > 7 || fila < 0 || fila > 7) return null;
+
+        return new int[]{fila, col};
+    }
+
+    private void actualizarVista() {
+        JTextArea area = (JTextArea)((JScrollPane)getContentPane().getComponent(0)).getViewport().getView();
+        area.setText(generarTextoTablero());
+    }
+
 }
