@@ -58,7 +58,7 @@ public class Damas {
         System.out.println("Escribe 'salir' para terminar.");
         System.out.println(VERDE+"El juego comienza..."+RESET);
         
-        final JugarDamas[] juego = new JugarDamas[1];
+        final JugarDamas[] juego = new JugarDamas[1];   // CLASE DONDE ESTA LA LOGICA DE JUEGO
         SwingUtilities.invokeLater(() -> {
             juego[0] = new JugarDamas(colorJugador);
         });
@@ -71,6 +71,12 @@ public class Damas {
         // Si jugador es negro, computadora hace el primer movimiento
         if (colorJugador == 'N') {
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            System.out.println("-------------------------------------------------");
+            System.out.println("Movimientos posbiles de computadora:");
+            for(String mov: juego[0].generarMovimientosPosibles()) {
+                System.out.println(mov);
+            }
+            System.out.println("-------------------------------------------------");
             String movimientoComputadora = juego[0].moverComputadora();
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
@@ -96,16 +102,22 @@ public class Damas {
             String origen = partes[0].trim();
             String destino = partes[1].trim();
 
-            boolean exito = juego[0].moverJugador(origen, destino);
+            boolean exito = juego[0].moverJugador(origen, destino); // MOVIMIENTO
             if (!exito) {
                 System.out.println(ROJO+"Movimiento inválido."+RESET);
                 continue;
             }
 
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            System.out.println("-------------------------------------------------");
+            System.out.println("Movimientos posbiles de computadora:");
+            for(String mov: juego[0].generarMovimientosPosibles()) {
+                System.out.println(mov);
+            }
+            System.out.println("-------------------------------------------------");       
             try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
-            String movimientoComputadora = juego[0].moverComputadora();
+            String movimientoComputadora = juego[0].moverComputadora(); // MOVIMIENTO
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
             } else {
