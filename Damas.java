@@ -22,7 +22,10 @@ public class Damas {
             case "-j":
                 iniciarJuego();
                 break;
-
+            case "-notacion":
+            case "-n":
+                mostrarNotacion();
+                break;    
             case "-version":
             case "-v":
                 mostrarVersion();
@@ -41,12 +44,21 @@ public class Damas {
         System.out.println();
         System.out.println("Opciones:");
         System.out.println("  -jugar , -j        Inicia el juego");
+        System.out.println("  -notacion , -n     Ver notacion de fichas");
         System.out.println("  -help , -h         Muestra esta ayuda");
         System.out.println("  -version , -v      Muestra la versión del programa");
     }
 
     private static void mostrarVersion() {
-        System.out.println("Damas versión 1.0");
+        System.out.println(" Juego Damas por consola - version 1.0");
+    }
+    private static void mostrarNotacion() {
+        System.out.println("----------NOTACION----------");
+        System.out.println("'B': Fichas blancas");
+        System.out.println("'N': Fichas negras");
+        System.out.println("' ' y '*' : casillas vacias (pero solo pueden moverse en las casillas donde es *)");
+        System.out.println("'0' : Dama negra");
+        System.out.println("'1' : Dama blanca");
     }
 
     private static void iniciarJuego() {

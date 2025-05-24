@@ -11,7 +11,7 @@ public class JugarDamas extends JFrame{
     /*
     'B': Fichas blancas
     'N': Fichas negras
-    ' ' y '*'→ casillas vacía(pero solo pueden moverse en las csaillas donde es *)
+    ' ' y '*' : casillas vacía(pero solo pueden moverse en las csaillas donde es *)
     '0' : dama negra
     '1' : dama blanca
     */
@@ -203,6 +203,7 @@ public class JugarDamas extends JFrame{
         Funciones para generar todos los movimiento posibles de la computadora
     */
     public List<String> generarMovimientosPosibles() {
+        // Movimiento posibles dados como coordenadas de tablero
         List<String> capturas = new ArrayList<>();
         List<String> movimientosSimples = new ArrayList<>();
 
