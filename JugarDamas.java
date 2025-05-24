@@ -6,6 +6,7 @@ import javax.swing.*;
 public class JugarDamas extends JFrame{
 
     private char colorJugador;
+    private char colorComputadora;
     private char[][] tablero = new char[8][8];
     /*
     'B': Fichas blancas
@@ -15,9 +16,10 @@ public class JugarDamas extends JFrame{
     '1' : dama blanca
     */
     
-    public JugarDamas(char colorJugador) {
+    public JugarDamas(char colorJugador, char colorComputadora) {
         
         this.colorJugador = colorJugador;
+        this.colorComputadora = colorComputadora;
         inicializarTablero();
 
         setTitle("Damas - Jugador con fichas " + (colorJugador == 'B' ? "BLANCAS" : "NEGRAS"));
@@ -209,13 +211,13 @@ public class JugarDamas extends JFrame{
                 char ficha = tablero[fila][col];
                 boolean esDama = (ficha == '0' && colorJugador == 'N') || (ficha == '1' && colorJugador == 'B');
 
-                if (ficha == colorJugador || (esDama)) {
-                    if (esDama) {
+                if (ficha == colorComputadora || (esDama)) {
+                    if (esDama) { // Identifico una ficha dama
                         capturas.addAll(buscarCapturasDama(fila, col));
                         if (capturas.isEmpty()) {
                             movimientosSimples.addAll(buscarMovimientosDama(fila, col));
                         }
-                    } else {
+                    } else {// identifico una ficha normal
                         capturas.addAll(buscarCapturasNormales(fila, col));
                         if (capturas.isEmpty()) {
                             movimientosSimples.addAll(buscarMovimientosNormales(fila, col));
@@ -253,8 +255,8 @@ public class JugarDamas extends JFrame{
         boolean capturaEncontrada = false;
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
-        char oponente = (colorJugador == 'B') ? 'N' : 'B';
-        char damaOponente = (colorJugador == 'B') ? '0' : '1';
+        char oponente = colorJugador;
+        char damaOponente = (colorJugador == 'B') ? '1' : '0';
 
         for (int i = 0; i < 4; i++) {
             int filaMid = fila + dFila[i];
@@ -271,7 +273,7 @@ public class JugarDamas extends JFrame{
                 char[][] copia = copiarTablero(tablero);
                 copia[fila][col] = '*';
                 copia[filaMid][colMid] = '*';
-                copia[filaDestino][colDestino] = colorJugador;
+                copia[filaDestino][colDestino] = colorComputadora;
 
                 String nuevoCamino = camino.isEmpty() ?
                     ("" + fila + col + " a " + filaDestino + colDestino) :
@@ -292,47 +294,52 @@ public class JugarDamas extends JFrame{
         List<String> movimientos = new ArrayList<>();
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
-
-        for (int i = 0; i < 4; i++) {
-            int f = fila + dFila[i];
-            int c = col + dCol[i];
-            while (dentroTablero(f, c) && tablero[f][c] == '*') {
-                movimientos.add("" + fila + col + " a " + f + c);
-                f += dFila[i];
-                c += dCol[i];
-            }
+        if ((tablero[fila][col] == '0' && colorComputadora == 'N') || (tablero[fila][col] == '1' && colorComputadora == 'B')) {
+            for (int i = 0; i < 4; i++) {
+                int f = fila + dFila[i];
+                int c = col + dCol[i];
+                while (dentroTablero(f, c) && tablero[f][c] == '*') {
+                    movimientos.add("" + fila + col + " a " + f + c);
+                    f += dFila[i];
+                    c += dCol[i];
+                }
+            }            
         }
         return movimientos;
     }
 
     private List<String> buscarCapturasDama(int fila, int col) {
         List<String> capturas = new ArrayList<>();
-        char oponente = (colorJugador == 'B') ? 'N' : 'B';
-        char damaOponente = (colorJugador == 'B') ? '0' : '1';
+        char oponente = colorJugador;
+        char damaOponente = (colorJugador == 'B') ? '1' : '0';
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
+        
+        if((tablero[fila][col] == '0' && colorComputadora == 'N') || (tablero[fila][col] == '1' && colorComputadora == 'B')){
+            for (int dir = 0; dir < 4; dir++) {
+                int f = fila + dFila[dir];
+                int c = col + dCol[dir];
+                boolean enemigoVisto = false;
 
-        for (int dir = 0; dir < 4; dir++) {
-            int f = fila + dFila[dir];
-            int c = col + dCol[dir];
-            boolean enemigoVisto = false;
-
-            while (dentroTablero(f, c)) {
-                if (tablero[f][c] == '*') {
-                    if (enemigoVisto) {
-                        capturas.add("" + fila + col + " a " + f + c);
+                while (dentroTablero(f, c)) {
+                    if (tablero[f][c] == '*') {
+                        if (enemigoVisto) {
+                            capturas.add("" + fila + col + " a " + f + c);
+                            break;
+                        }
+                    } else if (tablero[f][c] == oponente || tablero[f][c] == damaOponente) {
+                        if (enemigoVisto) break;
+                        enemigoVisto = true;
+                    } else {
                         break;
                     }
-                } else if (tablero[f][c] == oponente || tablero[f][c] == damaOponente) {
-                    if (enemigoVisto) break;
-                    enemigoVisto = true;
-                } else {
-                    break;
+                    f += dFila[dir];
+                    c += dCol[dir];
                 }
-                f += dFila[dir];
-                c += dCol[dir];
             }
         }
+
+
 
         return capturas;
     }

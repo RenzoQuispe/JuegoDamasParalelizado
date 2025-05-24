@@ -53,6 +53,7 @@ public class Damas {
         System.out.println("Escoge tus fichas: ");
         Scanner scanner = new Scanner(System.in);
         char colorJugador = elegirColor(scanner);
+        char colorComputadora = (colorJugador == 'B') ? 'N' : 'B';
         System.out.println("Has elegido jugar con las fichas " + (colorJugador == 'B' ? "BLANCAS" : "NEGRAS"));
         System.out.println("Formato para mover: H3 a G4");
         System.out.println("Escribe 'salir' para terminar.");
@@ -60,7 +61,7 @@ public class Damas {
         
         final JugarDamas[] juego = new JugarDamas[1];   // CLASE DONDE ESTA LA LOGICA DE JUEGO
         SwingUtilities.invokeLater(() -> {
-            juego[0] = new JugarDamas(colorJugador);
+            juego[0] = new JugarDamas(colorJugador,colorComputadora);
         });
 
         // Esperar a que la GUI esté lista
