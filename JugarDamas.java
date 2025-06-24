@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import javax.swing.*;
@@ -117,17 +119,30 @@ public class JugarDamas extends JFrame{
     public String moverComputadora() {
         ForkJoinPool pool = new ForkJoinPool();
         List<String> movimientos = generarMovimientosPosibles();
+        if (movimientos.isEmpty()) return "No hay movimientos posibles";
+        // lista para guardar resultados evaluados para cada movimiento
+        List<MovimientoEvaluado> evaluaciones = Collections.synchronizedList(new ArrayList<>());
         pool.submit(() -> movimientos.parallelStream().forEach(mov -> {
-            System.out.println(mov);
+            System.out.println("Evaluando :"+mov);
             //Tablero simulado con el movimiento
+            char[][] copiaTablero = copiarTablero(tablero);
+            char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov);
             //Puntaje de dicha simulacion
+            int puntaje = evaluarTablero(movSimulacion, colorComputadora);
             //Riesgo de dicha simulacion
+            int riesgo = evaluarRiesgo(movSimulacion, colorComputadora);
             //guardar puntaje final
+            double puntajeFinal = puntaje - 1.5 * riesgo;
+            evaluaciones.add(new MovimientoEvaluado(mov, puntajeFinal));
         })).join();
         //elegir el movimiento con mayor puntaje
+        MovimientoEvaluado mejor = evaluaciones.stream().max(Comparator.comparingDouble(MovimientoEvaluado::getScore)).orElse(null);
+        if (mejor == null) return "No hay movimientos posibles";
         //hacer movimiento, actualizar tablero
+        tablero = aplicarMovimiento(tablero, mejor.getMovimiento());
         //actualizar vista del tablero
-        return "Hecho"; // retornara descripcion del movimiento hecho
+        actualizarVista();
+        return mejor.getMovimiento(); // retornara descripcion del movimiento hecho
     }
 
     private boolean esValido(int fila, int col) {
