@@ -85,7 +85,7 @@ public class Damas {
         if (colorJugador == 'N') {
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             System.out.println("-------------------------------------------------");
-            System.out.println("Movimientos posbiles de computadora:");
+            System.out.println("Movimientos posibles de computadora:");
             for(String mov: juego[0].generarMovimientosPosibles()) {
                 System.out.println(mov);
             }
@@ -123,7 +123,7 @@ public class Damas {
 
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             System.out.println("-------------------------------------------------");
-            System.out.println("Movimientos posbiles de computadora:");
+            System.out.println("Movimientos posibles de computadora:");
             for(String mov: juego[0].generarMovimientosPosibles()) {
                 System.out.println(mov);
             }
@@ -158,4 +158,4 @@ public class Damas {
     }
 }
 //javac Damas.java JugarDamas.java
-//jar cfe Damas.jar Damas Damas.class JugarDamas.class icono.png
+//jar cfe Damas.jar Damas Damas.class JugarDamas.class img/icono.png

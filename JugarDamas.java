@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import javax.swing.*;
 
 public class JugarDamas extends JFrame{
@@ -28,7 +29,7 @@ public class JugarDamas extends JFrame{
         setLocationRelativeTo(null); // Centrar en pantalla
 
         // Establecer el ícono de la ventana
-        Image icono = Toolkit.getDefaultToolkit().getImage(getClass().getResource("icono.png"));
+        Image icono = Toolkit.getDefaultToolkit().getImage(getClass().getResource("img/icono.png"));
         setIconImage(icono);
         
         // Tablero
@@ -114,59 +115,19 @@ public class JugarDamas extends JFrame{
     }
 
     public String moverComputadora() {
-        char colorPC = (colorJugador == 'B') ? 'N' : 'B';
-        int[] direcciones = {-1, 1}; // arriba y abajo
-
-        // Primero buscar capturas posibles
-        for (int fila = 0; fila < 8; fila++) {
-            for (int col = 0; col < 8; col++) {
-                if (tablero[fila][col] == colorPC) {
-                    for (int df : direcciones) {
-                        for (int dc : direcciones) {
-                            int medioFila = fila + df;
-                            int medioCol = col + dc;
-                            int destinoFila = fila + 2 * df;
-                            int destinoCol = col + 2 * dc;
-
-                            if (esValido(destinoFila, destinoCol)
-                                && tablero[medioFila][medioCol] == colorJugador
-                                && tablero[destinoFila][destinoCol] == '*') {
-
-                                // Realizar captura
-                                tablero[destinoFila][destinoCol] = colorPC;
-                                tablero[fila][col] = '*';
-                                tablero[medioFila][medioCol] = '*';
-                                actualizarVista();
-                                return coordToString(fila, col) + " x " + coordToString(destinoFila, destinoCol);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Si no hay capturas, moverse en cualquier dirección
-        for (int fila = 0; fila < 8; fila++) {
-            for (int col = 0; col < 8; col++) {
-                if (tablero[fila][col] == colorPC) {
-                    for (int df : direcciones) {
-                        for (int dc : direcciones) {
-                            int nuevaFila = fila + df;
-                            int nuevaCol = col + dc;
-
-                            if (esValido(nuevaFila, nuevaCol) && tablero[nuevaFila][nuevaCol] == '*') {
-                                tablero[nuevaFila][nuevaCol] = colorPC;
-                                tablero[fila][col] = '*';
-                                actualizarVista();
-                                return coordToString(fila, col) + " a " + coordToString(nuevaFila, nuevaCol);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return null; // No pudo mover
+        ForkJoinPool pool = new ForkJoinPool();
+        List<String> movimientos = generarMovimientosPosibles();
+        pool.submit(() -> movimientos.parallelStream().forEach(mov -> {
+            System.out.println(mov);
+            //Tablero simulado con el movimiento
+            //Puntaje de dicha simulacion
+            //Riesgo de dicha simulacion
+            //guardar puntaje final
+        })).join();
+        //elegir el movimiento con mayor puntaje
+        //hacer movimiento, actualizar tablero
+        //actualizar vista del tablero
+        return "Hecho"; // retornara descripcion del movimiento hecho
     }
 
     private boolean esValido(int fila, int col) {
