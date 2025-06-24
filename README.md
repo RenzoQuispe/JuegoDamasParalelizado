@@ -9,5 +9,6 @@ Java instalado (JDK o JRE)
 
 Inicio Rapido
 -----------
-
-    $ java -jar Damas.jar
+    $ javac Damas.java JugarDamas.java
+    $ jar cfe Damas.jar Damas Damas.class JugarDamas.class img/icono.png
+    $ java -jar Damas.jar     // Iniciar el juego
