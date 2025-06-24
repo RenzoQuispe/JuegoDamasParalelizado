@@ -129,10 +129,13 @@ public class JugarDamas extends JFrame{
             char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov);
             //Puntaje de dicha simulacion
             int puntaje = evaluarTablero(movSimulacion, colorComputadora);
+            System.out.println(" - Diferencia puntaje: "+puntaje);
             //Riesgo de dicha simulacion
             int riesgo = evaluarRiesgo(movSimulacion, colorComputadora);
+            System.out.println(" - Riesgo: "+riesgo);
             //guardar puntaje final
             double puntajeFinal = puntaje - 1.5 * riesgo;
+            System.out.println(" - Puntaje final: "+puntajeFinal);
             evaluaciones.add(new MovimientoEvaluado(mov, puntajeFinal));
         })).join();
         //elegir el movimiento con mayor puntaje
@@ -290,6 +293,14 @@ public class JugarDamas extends JFrame{
             }
 
             copia[filaHacia][colHacia] = ficha;
+            // posible coronacion negras
+            if(filaHacia==7 && colorComputadora == 'N'){
+                copia[filaHacia][colHacia] = '0';
+            }
+            // posible coronacion blancas
+            if (filaHacia==0 && colorComputadora == 'B') {
+                copia[filaHacia][colHacia] = '1';
+            }
         }
 
         return copia;
