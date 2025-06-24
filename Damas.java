@@ -157,5 +157,3 @@ public class Damas {
         return eleccion;
     }
 }
-//javac Damas.java JugarDamas.java
-//jar cfe Damas.jar Damas Damas.class JugarDamas.class img/icono.png

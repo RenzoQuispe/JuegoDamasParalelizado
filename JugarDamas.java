@@ -174,6 +174,126 @@ public class JugarDamas extends JFrame{
         JTextArea area = (JTextArea)((JScrollPane)getContentPane().getComponent(0)).getViewport().getView();
         area.setText(generarTextoTablero());
     }
+    /*
+    Funciones para evaluar los movimientos posibles 
+    */
+    public int evaluarTablero(char[][] tablero, char colorComputadora) { //medicion de la ventaja material
+        int score = 0;
+        char fichaNormal = colorComputadora;
+        char dama = (colorComputadora == 'B') ? '1' : '0';
+        char fichaNormalJugador = (colorComputadora == 'B') ? 'N' : 'B';
+        char damaJugador = (colorComputadora == 'B') ? '0' : '1';
+    
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                char p = tablero[i][j];
+                if (p == fichaNormal) score += 3;
+                else if (p == dama) score += 5;
+                else if (p == fichaNormalJugador) score -= 3;
+                else if (p == damaJugador) score -= 5;
+            }
+        }
+        return score;
+    }
+    public int evaluarRiesgo(char[][] tablero, char colorComputadora) {
+        int riesgo = 0;
+        char enemigo = (colorComputadora == 'B') ? 'N' : 'B';
+        char damaEnemiga = (enemigo == 'B') ? '1' : '0';
+        
+        for (int fila = 0; fila < 8; fila++) {
+            for (int col = 0; col < 8; col++) {
+                char pieza = tablero[fila][col];
+                if (pieza == enemigo || pieza == damaEnemiga) {
+                    if (pieza == enemigo) {
+                        riesgo += buscarCapturasNormalesDesde(tablero, fila, col, colorComputadora).size();
+                    } else {
+                        riesgo += buscarCapturasDamaDesde(tablero, fila, col, colorComputadora).size();
+                    }
+                }
+            }
+        }
+
+        return riesgo;
+    }
+    private List<String> buscarCapturasNormalesDesde(char[][] tab, int fila, int col, char objetivo) {
+        List<String> capturas = new ArrayList<>();
+        int[] dFila = {-1, -1, 1, 1};
+        int[] dCol = {-1, 1, -1, 1};
+        char damaObjetivo = (objetivo == 'B') ? '1' : '0';
+
+        for (int i = 0; i < 4; i++) {
+            int midFila = fila + dFila[i];
+            int midCol = col + dCol[i];
+            int destFila = fila + 2 * dFila[i];
+            int destCol = col + 2 * dCol[i];
+
+            if (dentroTablero(destFila, destCol)
+                && (tab[midFila][midCol] == objetivo || tab[midFila][midCol] == damaObjetivo)
+                && tab[destFila][destCol] == '*') {
+                capturas.add("" + fila + col + " a " + destFila + destCol);
+            }
+        }
+        return capturas;
+    }
+
+    private List<String> buscarCapturasDamaDesde(char[][] tab, int fila, int col, char objetivo) {
+        List<String> capturas = new ArrayList<>();
+        char damaObjetivo = (objetivo == 'B') ? '1' : '0';
+        int[] dFila = {-1, -1, 1, 1};
+        int[] dCol = {-1, 1, -1, 1};
+
+        for (int dir = 0; dir < 4; dir++) {
+            int f = fila + dFila[dir];
+            int c = col + dCol[dir];
+            boolean enemigoVisto = false;
+
+            while (dentroTablero(f, c)) {
+                if (tab[f][c] == '*') {
+                    if (enemigoVisto) {
+                        capturas.add("" + fila + col + " a " + f + c);
+                        break;
+                    }
+                } else if (tab[f][c] == objetivo || tab[f][c] == damaObjetivo) {
+                    if (enemigoVisto) break;
+                    enemigoVisto = true;
+                } else break;
+
+                f += dFila[dir];
+                c += dCol[dir];
+            }
+        }
+
+        return capturas;
+    }
+    // funcion para aplicar movimiento a un tablero(original o copia)
+    public char[][] aplicarMovimiento(char[][] tablero, String mov) {
+        char[][] copia = copiarTablero(tablero);
+        String[] partes = mov.split(" a ");
+        
+        for (int i = 0; i < partes.length - 1; i++) {
+            String desde = partes[i];
+            String hacia = partes[i + 1];
+
+            int filaDesde = Character.getNumericValue(desde.charAt(0));
+            int colDesde = Character.getNumericValue(desde.charAt(1));
+            int filaHacia = Character.getNumericValue(hacia.charAt(0));
+            int colHacia = Character.getNumericValue(hacia.charAt(1));
+
+            char ficha = copia[filaDesde][colDesde];
+            copia[filaDesde][colDesde] = '*';
+
+            // si es una captura, eliminar ficha intermedia
+            if (Math.abs(filaDesde - filaHacia) == 2) {
+                int filaMedio = (filaDesde + filaHacia) / 2;
+                int colMedio = (colDesde + colHacia) / 2;
+                copia[filaMedio][colMedio] = '*';
+            }
+
+            copia[filaHacia][colHacia] = ficha;
+        }
+
+        return copia;
+    }
 
     /*
         Funciones para generar todos los movimiento posibles de la computadora
