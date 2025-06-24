@@ -62,6 +62,7 @@ public class Damas {
     }
 
     private static void iniciarJuego() {
+        System.out.println(VERDE+"----------JUGAR CHECKERS----------"+RESET);
         System.out.println("Escoge tus fichas: ");
         Scanner scanner = new Scanner(System.in);
         char colorJugador = elegirColor(scanner);
