@@ -130,7 +130,7 @@ public class JugarDamas extends JFrame{
         // lista para guardar resultados evaluados para cada movimiento
         List<MovimientoEvaluado> evaluaciones = Collections.synchronizedList(new ArrayList<>());
         pool.submit(() -> movimientos.parallelStream().forEach(mov -> {
-            System.out.println("Evaluando :"+mov);
+            System.out.println("Evaluando :"+convertirCoordenadasAPosicionTablero(mov));
             //Tablero simulado con el movimiento
             char[][] copiaTablero = copiarTablero(tablero);
             char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov);
@@ -152,17 +152,39 @@ public class JugarDamas extends JFrame{
         tablero = aplicarMovimiento(tablero, mejor.getMovimiento());
         //actualizar vista del tablero
         actualizarVista();
-        return mejor.getMovimiento(); // retornara descripcion del movimiento hecho
+        return convertirCoordenadasAPosicionTablero(mejor.getMovimiento()); // retornara descripcion del movimiento hecho
     }
 
     private boolean esValido(int fila, int col) {
         return fila >= 0 && fila < 8 && col >= 0 && col < 8;
     }
 
-    private String coordToString(int fila, int col) {
-        char letra = (char)('A' + col);
-        int numero = 8 - fila;
-        return "" + letra + numero;
+    public String convertirCoordenadasAPosicionTablero(String movimiento) { // para convertir los movimientos de tipo "21 a 32 a 45" o "54 a 56" a ubicacion de tablero (A1,C3,F2,D6,etc)
+        List<String> listaCoordenadas = new ArrayList<>();
+        String[] partes = movimiento.split("\\s*a\\s*"); // divide por 'a' con posibles espacios
+        for (String parte : partes) {
+            if (parte.matches("\\d{2}")) { // asegura que tenga 2 dígitos
+                listaCoordenadas.add(parte);
+            }
+        }
+        //Procesar esos numeros
+        List<String>  listaCoordenadasProcesada = new ArrayList<>();
+        for(String coordenadas: listaCoordenadas){
+            int fila = 8 - Character.getNumericValue(coordenadas.charAt(0));
+            char columna =(char) ( 'A' + Character.getNumericValue(coordenadas.charAt(1)));
+            String coordenadaProcesada = "" + columna + fila;
+            listaCoordenadasProcesada.add(coordenadaProcesada); 
+        }
+        
+        //Concatenarlos
+        StringBuilder stringFinal = new StringBuilder();
+        for (int i = 0; i < listaCoordenadasProcesada.size(); i++) {
+            stringFinal.append(listaCoordenadasProcesada.get(i));
+            if (i < listaCoordenadasProcesada.size() - 1) {
+                stringFinal.append(" a ");
+            }
+        }
+        return stringFinal.toString();
     }
 
     private int[] convertirCoord(String input) {

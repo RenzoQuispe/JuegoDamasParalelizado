@@ -88,7 +88,7 @@ public class Damas {
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
             for(String mov: juego[0].generarMovimientosPosibles()) {
-                System.out.println(mov);
+                System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
             System.out.println("-------------------------------------------------");
             String movimientoComputadora = juego[0].moverComputadora();
@@ -106,13 +106,11 @@ public class Damas {
                 System.out.println("Juego terminado.");
                 break;
             }
-
             String[] partes = linea.split("a");
             if (partes.length != 2) {
                 System.out.println(ROJO+"Formato inválido. Usa 'H3 a G4'"+RESET);
                 continue;
             }
-
             String origen = partes[0].trim();
             String destino = partes[1].trim();
 
@@ -121,12 +119,11 @@ public class Damas {
                 System.out.println(ROJO+"Movimiento inválido."+RESET);
                 continue;
             }
-
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
             for(String mov: juego[0].generarMovimientosPosibles()) {
-                System.out.println(mov);
+                System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
             System.out.println("-------------------------------------------------");       
             try { Thread.sleep(1000); } catch (InterruptedException e) {}
@@ -137,7 +134,6 @@ public class Damas {
             } else {
                 System.out.println(ROJO+"Computadora no pudo mover."+RESET);
             }            
-            
         }
 
     }
@@ -147,7 +143,6 @@ public class Damas {
         while (true) {
             System.out.print("¿Con qué fichas quieres jugar? (B para blancas / N para negras): ");
             String entrada = scanner.nextLine().trim().toUpperCase();
-
             if (entrada.equals("B") || entrada.equals("N")) {
                 eleccion = entrada.charAt(0);
                 break;
