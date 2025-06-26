@@ -112,6 +112,13 @@ public class JugarDamas extends JFrame{
         // Movimiento válido simple (sin captura por ahora)
         tablero[d[0]][d[1]] = colorJugador;
         tablero[o[0]][o[1]] = '*';
+        // coronacion
+        if (d[0]==0 && colorJugador=='B') {
+            tablero[d[0]][d[1]] = '1';
+        }
+        if (d[0]==7 && colorJugador=='N') {
+            tablero[d[0]][d[1]] = '0';
+        }
         actualizarVista();
         return true;
     }
@@ -340,10 +347,13 @@ public class JugarDamas extends JFrame{
 
     private List<String> buscarMovimientosNormales(int fila, int col) {
         List<String> movimientos = new ArrayList<>();
-        int[] dFila = {-1, -1, 1, 1};
-        int[] dCol = {-1, 1, -1, 1};
+        int[] dFila = {1, 1}; // computadora usa fichas negras
+        if (colorComputadora == 'B') { // computadora usa fichas blancas
+            dFila = new int[] {-1, -1}; 
+        }
+        int[] dCol = {-1, 1};
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             int nuevaFila = fila + dFila[i];
             int nuevaCol = col + dCol[i];
             if (dentroTablero(nuevaFila, nuevaCol) && tablero[nuevaFila][nuevaCol] == '*') {
