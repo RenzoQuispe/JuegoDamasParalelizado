@@ -97,30 +97,28 @@ public class JugarDamas extends JFrame{
         return sb.toString();
     }
     
-    public boolean moverJugador(String origen, String destino) {
-        int[] o = convertirCoord(origen);
-        int[] d = convertirCoord(destino);
-
-        if (o == null || d == null) {
+    public boolean moverJugador(String movimiento) {
+        List<String> movimientos = generarMovimientosPosibles(colorJugador);
+        List<String> movimientosProcesados = new ArrayList<>();
+        for (String mov : movimientos) {
+            String movProcesado = convertirCoordenadasAPosicionTablero(mov);
+            movimientosProcesados.add(movProcesado);
+        }
+        if(movimientosProcesados.contains(movimiento)){//A3 a B4
+            //hacer movimiento, actualizar tablero
+            int filaOrigen = 8 - Character.getNumericValue(movimiento.charAt(1));
+            int columnaOrigen = movimiento.charAt(0)-'A';
+            int filaDestino = 8 - Character.getNumericValue(movimiento.charAt(6));
+            int columnaDestino = movimiento.charAt(5)-'A';
+            
+            String movimientoCoordenadas = String.valueOf(filaOrigen)+String.valueOf(columnaOrigen)+ " a "+String.valueOf(filaDestino)+String.valueOf(columnaDestino);
+            tablero = aplicarMovimiento(tablero, movimientoCoordenadas,colorJugador);
+            //actualizar vista del tablero
+            actualizarVista();
+            return true;
+        }else{
             return false;
         }
-
-        if (tablero[o[0]][o[1]] != colorJugador || tablero[d[0]][d[1]] != '*') {
-            return false;
-        }
-
-        // Movimiento válido simple (sin captura por ahora)
-        tablero[d[0]][d[1]] = colorJugador;
-        tablero[o[0]][o[1]] = '*';
-        // coronacion
-        if (d[0]==0 && colorJugador=='B') {
-            tablero[d[0]][d[1]] = '1';
-        }
-        if (d[0]==7 && colorJugador=='N') {
-            tablero[d[0]][d[1]] = '0';
-        }
-        actualizarVista();
-        return true;
     }
 
     public String moverComputadora() {
@@ -133,7 +131,7 @@ public class JugarDamas extends JFrame{
             System.out.println("Evaluando :"+convertirCoordenadasAPosicionTablero(mov));
             //Tablero simulado con el movimiento
             char[][] copiaTablero = copiarTablero(tablero);
-            char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov);
+            char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov,colorComputadora);
             //Puntaje de dicha simulacion
             int puntaje = evaluarTablero(movSimulacion, colorComputadora);
             System.out.println(" - Diferencia puntaje: "+puntaje);
@@ -149,14 +147,10 @@ public class JugarDamas extends JFrame{
         MovimientoEvaluado mejor = evaluaciones.stream().max(Comparator.comparingDouble(MovimientoEvaluado::getScore)).orElse(null);
         if (mejor == null) return "No hay movimientos posibles";
         //hacer movimiento, actualizar tablero
-        tablero = aplicarMovimiento(tablero, mejor.getMovimiento());
+        tablero = aplicarMovimiento(tablero, mejor.getMovimiento(),colorComputadora);
         //actualizar vista del tablero
         actualizarVista();
         return convertirCoordenadasAPosicionTablero(mejor.getMovimiento()); // retornara descripcion del movimiento hecho
-    }
-
-    private boolean esValido(int fila, int col) {
-        return fila >= 0 && fila < 8 && col >= 0 && col < 8;
     }
 
     public String convertirCoordenadasAPosicionTablero(String movimiento) { // para convertir los movimientos de tipo "21 a 32 a 45" o "54 a 56" a ubicacion de tablero (A1,C3,F2,D6,etc)
@@ -186,22 +180,6 @@ public class JugarDamas extends JFrame{
         }
         return stringFinal.toString();
     }
-
-    private int[] convertirCoord(String input) {
-        input = input.toUpperCase().trim();
-        if (input.length() != 2) return null;
-
-        char letra = input.charAt(0);
-        char numero = input.charAt(1);
-
-        int col = letra - 'A';
-        int fila = 8 - Character.getNumericValue(numero);
-
-        if (col < 0 || col > 7 || fila < 0 || fila > 7) return null;
-
-        return new int[]{fila, col};
-    }
-
     private void actualizarVista() {
         JTextArea area = (JTextArea)((JScrollPane)getContentPane().getComponent(0)).getViewport().getView();
         area.setText(generarTextoTablero());
@@ -298,7 +276,7 @@ public class JugarDamas extends JFrame{
         return capturas;
     }
     // funcion para aplicar movimiento a un tablero(original o copia)
-    public char[][] aplicarMovimiento(char[][] tablero, String mov) {
+    public char[][] aplicarMovimiento(char[][] tablero, String mov, char color) {
         char[][] copia = copiarTablero(tablero);
         String[] partes = mov.split(" a ");
         
@@ -323,11 +301,11 @@ public class JugarDamas extends JFrame{
 
             copia[filaHacia][colHacia] = ficha;
             // posible coronacion negras
-            if(filaHacia==7 && colorComputadora == 'N'){
+            if(filaHacia==7 && color == 'N'){
                 copia[filaHacia][colHacia] = '0';
             }
             // posible coronacion blancas
-            if (filaHacia==0 && colorComputadora == 'B') {
+            if (filaHacia==0 && color == 'B') {
                 copia[filaHacia][colHacia] = '1';
             }
         }
@@ -336,7 +314,7 @@ public class JugarDamas extends JFrame{
     }
 
     /*
-        Funciones para generar todos los movimiento posibles de la computadora
+        Funciones para generar todos los movimiento posibles de la computadora o jugador
     */
     public List<String> generarMovimientosPosibles(char color) {
         List<String> capturas = new ArrayList<>();

@@ -116,24 +116,17 @@ public class Damas {
             System.out.println("-------------------------------------------------");
             // Movimiento del Jugador
             System.out.print("Ingresa tu movimiento: ");
-            String linea = scanner.nextLine().trim();
-            if (linea.equalsIgnoreCase("salir")) {
+            String movimientoJugador = scanner.nextLine().trim();
+            if (movimientoJugador.equalsIgnoreCase("salir")) {
                 System.out.println("Juego terminado.");
                 break;
             }
-            String[] partes = linea.split("a");
-            if (partes.length != 2) {
-                System.out.println(ROJO+"Formato inválido. Usa 'H3 a G4'"+RESET);
-                continue;
-            }
-            String origen = partes[0].trim();
-            String destino = partes[1].trim();
-            boolean exito = juego[0].moverJugador(origen, destino); // MOVIMIENTO
+            boolean exito = juego[0].moverJugador(movimientoJugador); // MOVIMIENTO
             if (!exito) {
                 System.out.println(ROJO+"Movimiento inválido."+RESET);
                 continue;
             }else{
-                System.out.println(AMARILLO+"Tu movimiento es: "+linea+RESET);
+                System.out.println(AMARILLO+"Tu movimiento es: "+movimientoJugador+RESET);
             }
             // Verificar si hay movimientos posibles para la computadora
             List<String> movimientosComputadora = juego[0].generarMovimientosPosibles(colorComputadora);
