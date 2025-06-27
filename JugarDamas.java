@@ -125,7 +125,7 @@ public class JugarDamas extends JFrame{
 
     public String moverComputadora() {
         ForkJoinPool pool = new ForkJoinPool();
-        List<String> movimientos = generarMovimientosPosibles();
+        List<String> movimientos = generarMovimientosPosibles(colorComputadora);
         if (movimientos.isEmpty()) return "No hay movimientos posibles";
         // lista para guardar resultados evaluados para cada movimiento
         List<MovimientoEvaluado> evaluaciones = Collections.synchronizedList(new ArrayList<>());
@@ -338,7 +338,7 @@ public class JugarDamas extends JFrame{
     /*
         Funciones para generar todos los movimiento posibles de la computadora
     */
-    public List<String> generarMovimientosPosibles() {
+    public List<String> generarMovimientosPosibles(char color) {
         // Movimiento posibles dados como coordenadas de tablero
         List<String> capturas = new ArrayList<>();
         List<String> movimientosSimples = new ArrayList<>();
@@ -346,18 +346,18 @@ public class JugarDamas extends JFrame{
         for (int fila = 0; fila < 8; fila++) {
             for (int col = 0; col < 8; col++) {
                 char ficha = tablero[fila][col];
-                boolean esDama = (ficha == '0' && colorJugador == 'N') || (ficha == '1' && colorJugador == 'B');
+                boolean esDama = (ficha == '0' && color == 'N') || (ficha == '1' && color == 'B');
 
-                if (ficha == colorComputadora || (esDama)) {
+                if (ficha == color || (esDama)) {
                     if (esDama) { // Identifico una ficha dama
-                        capturas.addAll(buscarCapturasDama(fila, col));
+                        capturas.addAll(buscarCapturasDama(fila, col,color));
                         if (capturas.isEmpty()) {
-                            movimientosSimples.addAll(buscarMovimientosDama(fila, col));
+                            movimientosSimples.addAll(buscarMovimientosDama(fila, col,color));
                         }
                     } else {// identifico una ficha normal
-                        capturas.addAll(buscarCapturasNormales(fila, col));
+                        capturas.addAll(buscarCapturasNormales(fila, col,color));
                         if (capturas.isEmpty()) {
-                            movimientosSimples.addAll(buscarMovimientosNormales(fila, col));
+                            movimientosSimples.addAll(buscarMovimientosNormales(fila, col,color));
                         }
                     }
                 }
@@ -367,10 +367,10 @@ public class JugarDamas extends JFrame{
         return !capturas.isEmpty() ? capturas : movimientosSimples;
     }
 
-    private List<String> buscarMovimientosNormales(int fila, int col) {
+    private List<String> buscarMovimientosNormales(int fila, int col,char color) {
         List<String> movimientos = new ArrayList<>();
-        int[] dFila = {1, 1}; // computadora usa fichas negras
-        if (colorComputadora == 'B') { // computadora usa fichas blancas
+        int[] dFila = {1, 1}; // usa fichas negras
+        if (color == 'B') { // usa fichas blancas
             dFila = new int[] {-1, -1}; 
         }
         int[] dCol = {-1, 1};
@@ -385,18 +385,18 @@ public class JugarDamas extends JFrame{
         return movimientos;
     }
 
-    private List<String> buscarCapturasNormales(int fila, int col) {
+    private List<String> buscarCapturasNormales(int fila, int col,char color) {
         List<String> capturas = new ArrayList<>();
-        buscarCapturasRec(fila, col,new boolean[8][8], "", capturas);
+        buscarCapturasRec(fila, col,new boolean[8][8], "", capturas,color);
         return capturas;
     }
 
-    private void buscarCapturasRec(int fila, int col, boolean[][] visitado,String camino, List<String> capturas) {
+    private void buscarCapturasRec(int fila, int col, boolean[][] visitado,String camino, List<String> capturas,char color) {
         boolean capturaEncontrada = false;
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
-        char oponente = colorJugador;
-        char damaOponente = (colorJugador == 'B') ? '1' : '0';
+        char oponente = (color== 'B') ? 'N' : 'B';
+        char damaOponente = (color == 'B') ? '0' : '1';
 
         for (int i = 0; i < 4; i++) {
             int filaMid = fila + dFila[i];
@@ -413,13 +413,13 @@ public class JugarDamas extends JFrame{
                 char[][] copia = copiarTablero(tablero);
                 copia[fila][col] = '*';
                 copia[filaMid][colMid] = '*';
-                copia[filaDestino][colDestino] = colorComputadora;
+                copia[filaDestino][colDestino] = color;
 
                 String nuevoCamino = camino.isEmpty() ?
                     ("" + fila + col + " a " + filaDestino + colDestino) :
                     (camino + " a " + filaDestino + colDestino);
 
-                buscarCapturasRec(filaDestino, colDestino, visitado, nuevoCamino, capturas);
+                buscarCapturasRec(filaDestino, colDestino, visitado, nuevoCamino, capturas,color);
                 capturaEncontrada = true;
                 visitado[filaMid][colMid] = false;
             }
@@ -430,11 +430,11 @@ public class JugarDamas extends JFrame{
         }
     }
 
-    private List<String> buscarMovimientosDama(int fila, int col) {
+    private List<String> buscarMovimientosDama(int fila, int col,char color) {
         List<String> movimientos = new ArrayList<>();
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
-        if ((tablero[fila][col] == '0' && colorComputadora == 'N') || (tablero[fila][col] == '1' && colorComputadora == 'B')) {
+        if ((tablero[fila][col] == '0' && color== 'N') || (tablero[fila][col] == '1' && color== 'B')) {
             for (int i = 0; i < 4; i++) {
                 int f = fila + dFila[i];
                 int c = col + dCol[i];
@@ -448,14 +448,14 @@ public class JugarDamas extends JFrame{
         return movimientos;
     }
 
-    private List<String> buscarCapturasDama(int fila, int col) {
+    private List<String> buscarCapturasDama(int fila, int col,char color) {
         List<String> capturas = new ArrayList<>();
-        char oponente = colorJugador;
-        char damaOponente = (colorJugador == 'B') ? '1' : '0';
+        char oponente = (color == 'B') ? 'N' : 'B';
+        char damaOponente = (color == 'B') ? '0' : '1';
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
         
-        if((tablero[fila][col] == '0' && colorComputadora == 'N') || (tablero[fila][col] == '1' && colorComputadora == 'B')){
+        if((tablero[fila][col] == '0' && color == 'N') || (tablero[fila][col] == '1' && color == 'B')){
             for (int dir = 0; dir < 4; dir++) {
                 int f = fila + dFila[dir];
                 int c = col + dCol[dir];
@@ -478,9 +478,6 @@ public class JugarDamas extends JFrame{
                 }
             }
         }
-
-
-
         return capturas;
     }
     //Verifica si una posicion esta dentro del tablero

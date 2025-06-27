@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Scanner;
 import javax.swing.SwingUtilities;
 
@@ -9,7 +10,7 @@ public class Damas {
     public static final String VERDE = "\u001B[32m";
     public static final String AZUL = "\u001B[34m";
     public static final String CELESTE = "\u001B[36m";
-
+    public static final String AMARILLO = "\u001B[33m";
 
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equals("-help") || args[0].equals("-h")) {
@@ -71,7 +72,6 @@ public class Damas {
         System.out.println("Formato para mover: H3 a G4");
         System.out.println("Escribe 'salir' para terminar.");
         System.out.println(VERDE+"El juego comienza..."+RESET);
-        
         final JugarDamas[] juego = new JugarDamas[1];   // CLASE DONDE ESTA LA LOGICA DE JUEGO
         SwingUtilities.invokeLater(() -> {
             juego[0] = new JugarDamas(colorJugador,colorComputadora);
@@ -84,14 +84,15 @@ public class Damas {
 
         // Si jugador es negro, computadora hace el primer movimiento
         if (colorJugador == 'N') {
-            System.out.println(CELESTE+"Computadora piensa..."+RESET);
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
-            for(String mov: juego[0].generarMovimientosPosibles()) {
+            for(String mov: juego[0].generarMovimientosPosibles(colorComputadora)) {
                 System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
             System.out.println("-------------------------------------------------");
+            System.out.println(CELESTE+"Computadora piensa..."+RESET);
             String movimientoComputadora = juego[0].moverComputadora();
+            System.out.println("-------------------------------------------------");
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
             } else {
@@ -100,7 +101,21 @@ public class Damas {
         }
 
         while (true) {
-            System.out.print("Tu movimiento: ");
+            // Verficar si hay movimientos posibles para el jugador
+            List<String> movimientosJugador = juego[0].generarMovimientosPosibles(colorJugador);
+            if(movimientosJugador.isEmpty()){
+                System.out.println(ROJO+"Gano la Computadora"+RESET);
+                break;
+            }
+            // Movimientos posibles del jugador
+            System.out.println("-------------------------------------------------");
+            System.out.println("Tus movimientos posibles:");
+            for(String mov: juego[0].generarMovimientosPosibles(colorJugador)) {
+                System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
+            }
+            System.out.println("-------------------------------------------------");
+            // Movimiento del Jugador
+            System.out.print("Ingresa tu movimiento: ");
             String linea = scanner.nextLine().trim();
             if (linea.equalsIgnoreCase("salir")) {
                 System.out.println("Juego terminado.");
@@ -113,29 +128,37 @@ public class Damas {
             }
             String origen = partes[0].trim();
             String destino = partes[1].trim();
-
             boolean exito = juego[0].moverJugador(origen, destino); // MOVIMIENTO
             if (!exito) {
                 System.out.println(ROJO+"Movimiento inválido."+RESET);
                 continue;
+            }else{
+                System.out.println(AMARILLO+"Tu movimiento es: "+linea+RESET);
             }
-            System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            // Verificar si hay movimientos posibles para la computadora
+            List<String> movimientosComputadora = juego[0].generarMovimientosPosibles(colorComputadora);
+            if(movimientosComputadora.isEmpty()){
+                System.out.println(ROJO+"Ganaste :D"+RESET);
+                break;
+            }
+            // Movimientos posibles de Computadora
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
-            for(String mov: juego[0].generarMovimientosPosibles()) {
+            for(String mov: juego[0].generarMovimientosPosibles(colorComputadora)) {
                 System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
-            System.out.println("-------------------------------------------------");       
+            System.out.println("-------------------------------------------------");
+            System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            //Computadora "piensa" su movimiento y toma la mejor decision      
             try { Thread.sleep(1000); } catch (InterruptedException e) {}
-
             String movimientoComputadora = juego[0].moverComputadora(); // MOVIMIENTO
+            System.out.println("-------------------------------------------------");
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
             } else {
                 System.out.println(ROJO+"Computadora no pudo mover."+RESET);
-            }            
+            }
         }
-
     }
 
     private static char elegirColor(Scanner scanner) {
