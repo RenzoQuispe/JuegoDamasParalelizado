@@ -9,4 +9,6 @@ Java instalado (JDK o JRE)
 
 Inicio Rapido
 -----------
-    $ make jugar
+    git clone https://github.com/RenzoQuispe/JuegoDamasParalelizado.git
+    cd JuegoDamasParalelizado
+    make jugar

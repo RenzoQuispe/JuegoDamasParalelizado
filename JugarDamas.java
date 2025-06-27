@@ -339,7 +339,6 @@ public class JugarDamas extends JFrame{
         Funciones para generar todos los movimiento posibles de la computadora
     */
     public List<String> generarMovimientosPosibles(char color) {
-        // Movimiento posibles dados como coordenadas de tablero
         List<String> capturas = new ArrayList<>();
         List<String> movimientosSimples = new ArrayList<>();
 
@@ -349,12 +348,12 @@ public class JugarDamas extends JFrame{
                 boolean esDama = (ficha == '0' && color == 'N') || (ficha == '1' && color == 'B');
 
                 if (ficha == color || (esDama)) {
-                    if (esDama) { // Identifico una ficha dama
-                        capturas.addAll(buscarCapturasDama(fila, col,color));
+                    if (esDama) { // encuentra una dama
+                        capturas.addAll(capturasDamaMaximas(fila,col,color,tablero));
                         if (capturas.isEmpty()) {
                             movimientosSimples.addAll(buscarMovimientosDama(fila, col,color));
                         }
-                    } else {// identifico una ficha normal
+                    } else {// encuentra ficha normal
                         capturas.addAll(buscarCapturasNormales(fila, col,color));
                         if (capturas.isEmpty()) {
                             movimientosSimples.addAll(buscarMovimientosNormales(fila, col,color));
@@ -363,7 +362,6 @@ public class JugarDamas extends JFrame{
                 }
             }
         }
-
         return !capturas.isEmpty() ? capturas : movimientosSimples;
     }
 
@@ -448,38 +446,76 @@ public class JugarDamas extends JFrame{
         return movimientos;
     }
 
-    private List<String> buscarCapturasDama(int fila, int col,char color) {
-        List<String> capturas = new ArrayList<>();
+    // capturas posibles de damas
+    public List<String> capturasDamaMaximas(int fila, int col, char color, char[][] tablero) {
+        List<String> todas = buscarCapturasDamaMultiples(fila, col, color, "", tablero);
+    
+        int maxCapturas = -1;
+        List<String> filtradas = new ArrayList<>();
+    
+        for (String s : todas) {
+            int capturas = s.split(" a ").length - 1;
+            if (capturas > maxCapturas) {
+                maxCapturas = capturas;
+                filtradas.clear();
+                filtradas.add(s);
+            } else if (capturas == maxCapturas) {
+                filtradas.add(s);
+            }
+        }
+    
+        return filtradas;
+    }
+    private List<String> buscarCapturasDamaMultiples(int fila, int col, char color, String camino, char[][] tableroActual) {
+        List<String> secuencias = new ArrayList<>();
         char oponente = (color == 'B') ? 'N' : 'B';
         char damaOponente = (color == 'B') ? '0' : '1';
         int[] dFila = {-1, -1, 1, 1};
         int[] dCol = {-1, 1, -1, 1};
-        
-        if((tablero[fila][col] == '0' && color == 'N') || (tablero[fila][col] == '1' && color == 'B')){
-            for (int dir = 0; dir < 4; dir++) {
-                int f = fila + dFila[dir];
-                int c = col + dCol[dir];
-                boolean enemigoVisto = false;
-
-                while (dentroTablero(f, c)) {
-                    if (tablero[f][c] == '*') {
-                        if (enemigoVisto) {
-                            capturas.add("" + fila + col + " a " + f + c);
-                            break;
-                        }
-                    } else if (tablero[f][c] == oponente || tablero[f][c] == damaOponente) {
-                        if (enemigoVisto) break;
-                        enemigoVisto = true;
-                    } else {
-                        break;
-                    }
-                    f += dFila[dir];
-                    c += dCol[dir];
+        boolean capturaRealizada = false;
+    
+        for (int dir = 0; dir < 4; dir++) {
+            int f = fila + dFila[dir];
+            int c = col + dCol[dir];
+    
+            // buscar primer enemigo adyacente
+            if (!dentroTablero(f, c)) continue;
+            if (tableroActual[f][c] != oponente && tableroActual[f][c] != damaOponente) continue;
+    
+            // buscar casillas vacias luego del enemigo
+            int f2 = f + dFila[dir];
+            int c2 = c + dCol[dir];
+    
+            while (dentroTablero(f2, c2) && tableroActual[f2][c2] == '*') {
+                // simular movimiento sobre copia del tablero
+                char[][] nuevoTablero = copiarTablero(tableroActual);
+                nuevoTablero[fila][col] = '*';
+                nuevoTablero[f][c] = '*';
+                nuevoTablero[f2][c2] = tableroActual[fila][col];
+    
+                String nuevoCamino = (camino.isEmpty() ? fila + "" + col : camino) + " a " + f2 + c2;
+    
+                // recursion - continuar desde nueva posición
+                List<String> continuaciones = buscarCapturasDamaMultiples(f2, c2, color, nuevoCamino, nuevoTablero);
+                if (continuaciones.isEmpty()) {
+                    secuencias.add(nuevoCamino);
+                } else {
+                    secuencias.addAll(continuaciones);
                 }
+    
+                capturaRealizada = true;
+                f2 += dFila[dir];
+                c2 += dCol[dir];
             }
         }
-        return capturas;
+    
+        if (!capturaRealizada && !camino.isEmpty()) {
+            secuencias.add(camino);
+        }
+    
+        return secuencias;
     }
+            
     //Verifica si una posicion esta dentro del tablero
     private boolean dentroTablero(int fila, int col) {
         return fila >= 0 && fila < 8 && col >= 0 && col < 8;
