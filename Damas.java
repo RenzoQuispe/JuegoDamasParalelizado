@@ -91,10 +91,14 @@ public class Damas {
             }
             System.out.println("-------------------------------------------------");
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
+            long inicio = System.currentTimeMillis();
             String movimientoComputadora = juego[0].moverComputadora();
+            long fin = System.currentTimeMillis();     // Termina el cronómetro
+            long tiempoEnMilisegundos = fin - inicio;
             System.out.println("-------------------------------------------------");
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
+                System.out.println(CELESTE + "Tiempo pensado: " + tiempoEnMilisegundos +" ms" + RESET);
             } else {
                 System.out.println(ROJO+"Computadora no pudo mover."+RESET);
             }
@@ -144,10 +148,14 @@ public class Damas {
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             //Computadora "piensa" su movimiento y toma la mejor decision      
             try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            long inicio_ = System.currentTimeMillis();
             String movimientoComputadora = juego[0].moverComputadora(); // MOVIMIENTO
+            long fin_ = System.currentTimeMillis();
+            long tiempoEnMilisegundos_ = fin_ - inicio_;
             System.out.println("-------------------------------------------------");
             if (movimientoComputadora != null) {
                 System.out.println(CELESTE + "Movimiento de la Computadora: " + movimientoComputadora + RESET);
+                System.out.println(CELESTE + "Tiempo pensado: " + tiempoEnMilisegundos_ +" ms" + RESET);
             } else {
                 System.out.println(ROJO+"Computadora no pudo mover."+RESET);
             }
