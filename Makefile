@@ -4,9 +4,9 @@ run: .run.done
 
 .run.done:
 	# Compilar los .java
-	javac Damas.java JugarDamas.java MovimientoEvaluado.java
+	javac Damas.java JugarDamas.java MovimientoEvaluado.java JugarDamasSecuencial.java JugarDamasParalelizado.java
 	# crear el .jar con clase principal y recursos
-	jar cfe Damas.jar Damas Damas.class JugarDamas.class MovimientoEvaluado.class img/icono.png
+	jar cfe Damas.jar Damas Damas.class JugarDamas.class MovimientoEvaluado.class img/icono.png JugarDamasSecuencial.class JugarDamasParalelizado.class
 	# ejecutar el jar
 	java -jar Damas.jar
 	# crear archivo marcador
