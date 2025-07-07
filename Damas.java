@@ -63,7 +63,22 @@ public class Damas {
     }
 
     private static void iniciarJuego() {
+        
         System.out.println(VERDE+"----------JUGAR CHECKERS----------"+RESET);
+        Scanner scannerTipo = new Scanner(System.in);
+        String TipoDamas;
+
+        // Bucle de validación de tipo de damas
+        while (true) {
+            System.out.print("Escoge versión de Damas, paralelizado (p) o secuencial (s): ");
+            TipoDamas = scannerTipo.nextLine().trim().toLowerCase();
+
+            if (TipoDamas.equals("p") || TipoDamas.equals("s")) {
+                break; // Entrada válida
+            } else {
+                System.out.println("Opción no válida. Solo se permite 'p' o 's'. Intenta de nuevo.");
+            }
+        }
         System.out.println("Escoge tus fichas: ");
         Scanner scanner = new Scanner(System.in);
         char colorJugador = elegirColor(scanner);
@@ -71,11 +86,20 @@ public class Damas {
         System.out.println("Has elegido jugar con las fichas " + (colorJugador == 'B' ? "BLANCAS" : "NEGRAS"));
         System.out.println("Formato para mover: H3 a G4");
         System.out.println("Escribe 'salir' para terminar.");
-        System.out.println(VERDE+"El juego comienza..."+RESET);
-        final JugarDamas[] juego = new JugarDamas[1];   // CLASE DONDE ESTA LA LOGICA DE JUEGO
-        SwingUtilities.invokeLater(() -> {
-            juego[0] = new JugarDamas(colorJugador,colorComputadora);
-        });
+        
+        final JugarDamas[] juego = new JugarDamas[1];
+
+        if (TipoDamas.equals("p")) {
+            SwingUtilities.invokeLater(() -> {
+                juego[0] = new JugarDamasParalelizado(colorJugador, colorComputadora);
+            });
+            System.out.println(VERDE+"Damas Paralelizado. El juego comienza..."+RESET);
+        } else {
+            SwingUtilities.invokeLater(() -> {
+                juego[0] = new JugarDamasSecuencial(colorJugador, colorComputadora);
+            });
+            System.out.println(VERDE+"Damas Secuencial. El juego comienza..."+RESET);
+        }
 
         // Esperar a que la GUI esté lista
         while (juego[0] == null) {
