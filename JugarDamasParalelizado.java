@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import javax.swing.*;
 
@@ -125,32 +126,50 @@ public class JugarDamasParalelizado extends JFrame implements JugarDamas{
         ForkJoinPool pool = new ForkJoinPool();
         List<String> movimientos = generarMovimientosPosibles(colorComputadora);
         if (movimientos.isEmpty()) return "No hay movimientos posibles";
-        // lista para guardar resultados evaluados para cada movimiento
+
         List<MovimientoEvaluado> evaluaciones = Collections.synchronizedList(new ArrayList<>());
+
         pool.submit(() -> movimientos.parallelStream().forEach(mov -> {
-            System.out.println("Evaluando :"+convertirCoordenadasAPosicionTablero(mov));
-            //Tablero simulado con el movimiento
-            char[][] copiaTablero = copiarTablero(tablero);
-            char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov,colorComputadora);
-            //Puntaje de dicha simulacion
-            int puntaje = evaluarTablero(movSimulacion, colorComputadora);
-            System.out.println(" - Diferencia puntaje: "+puntaje);
-            //Riesgo de dicha simulacion
-            int riesgo = evaluarRiesgo(movSimulacion, colorComputadora);
-            System.out.println(" - Riesgo: "+riesgo);
-            //guardar puntaje final
-            double puntajeFinal = puntaje - 1.5 * riesgo;
-            System.out.println(" - Puntaje final: "+puntajeFinal);
-            evaluaciones.add(new MovimientoEvaluado(mov, puntajeFinal));
+            try {
+                System.out.println("Evaluando: " + convertirCoordenadasAPosicionTablero(mov));
+
+                // Simulación del movimiento
+                char[][] copiaTablero = copiarTablero(tablero);
+                char[][] movSimulacion = aplicarMovimiento(copiaTablero, mov, colorComputadora);
+
+                // Paralelizar evaluación de puntaje y riesgo
+                CompletableFuture<Integer> puntajeFuture = CompletableFuture.supplyAsync(() ->
+                    evaluarTablero(movSimulacion, colorComputadora)
+                );
+
+                CompletableFuture<Integer> riesgoFuture = CompletableFuture.supplyAsync(() ->
+                    evaluarRiesgo(movSimulacion, colorComputadora)
+                );
+
+                // Obtener resultados
+                int puntaje = puntajeFuture.get();  // espera que termine
+                int riesgo = riesgoFuture.get();    // espera que termine
+
+                double puntajeFinal = puntaje - 1.5 * riesgo;
+
+                System.out.println(" - Puntaje: " + puntaje + ", Riesgo: " + riesgo + ", Final: " + puntajeFinal);
+
+                evaluaciones.add(new MovimientoEvaluado(mov, puntajeFinal));
+            } catch (Exception e) {
+                e.printStackTrace(); // No detener todo si una evaluación falla
+            }
         })).join();
-        //elegir el movimiento con mayor puntaje
-        MovimientoEvaluado mejor = evaluaciones.stream().max(Comparator.comparingDouble(MovimientoEvaluado::getScore)).orElse(null);
+
+        MovimientoEvaluado mejor = evaluaciones.stream()
+                .max(Comparator.comparingDouble(MovimientoEvaluado::getScore))
+                .orElse(null);
+
         if (mejor == null) return "No hay movimientos posibles";
-        //hacer movimiento, actualizar tablero
-        tablero = aplicarMovimiento(tablero, mejor.getMovimiento(),colorComputadora);
-        //actualizar vista del tablero
+
+        tablero = aplicarMovimiento(tablero, mejor.getMovimiento(), colorComputadora);
         actualizarVista();
-        return convertirCoordenadasAPosicionTablero(mejor.getMovimiento()); // retornara descripcion del movimiento hecho
+
+        return convertirCoordenadasAPosicionTablero(mejor.getMovimiento());
     }
 
     public String convertirCoordenadasAPosicionTablero(String movimiento) { // para convertir los movimientos de tipo "21 a 32 a 45" o "54 a 56" a ubicacion de tablero (A1,C3,F2,D6,etc)
@@ -187,44 +206,43 @@ public class JugarDamasParalelizado extends JFrame implements JugarDamas{
     /*
     Funciones para evaluar los movimientos posibles 
     */
-    public int evaluarTablero(char[][] tablero, char colorComputadora) { //medicion de la ventaja material
-        int score = 0;
+    public int evaluarTablero(char[][] tablero, char colorComputadora) {
         char fichaNormal = colorComputadora;
         char dama = (colorComputadora == 'B') ? '1' : '0';
         char fichaNormalJugador = (colorComputadora == 'B') ? 'N' : 'B';
         char damaJugador = (colorComputadora == 'B') ? '0' : '1';
     
-        for (int i = 0; i < 8; i++) {
+        return java.util.stream.IntStream.range(0, 8).parallel().map(i -> {
+            int scoreFila = 0;
             for (int j = 0; j < 8; j++) {
                 char p = tablero[i][j];
-                if (p == fichaNormal) score += 3;
-                else if (p == dama) score += 5;
-                else if (p == fichaNormalJugador) score -= 3;
-                else if (p == damaJugador) score -= 5;
+                if (p == fichaNormal) scoreFila += 3;
+                else if (p == dama) scoreFila += 5;
+                else if (p == fichaNormalJugador) scoreFila -= 3;
+                else if (p == damaJugador) scoreFila -= 5;
             }
-        }
-        return score;
-    }
+            return scoreFila;
+        }).sum();
+    }    
+
     public int evaluarRiesgo(char[][] tablero, char colorComputadora) {
-        int riesgo = 0;
         char enemigo = (colorComputadora == 'B') ? 'N' : 'B';
         char damaEnemiga = (enemigo == 'B') ? '1' : '0';
-        
-        for (int fila = 0; fila < 8; fila++) {
+    
+        return java.util.stream.IntStream.range(0, 8).parallel().map(fila -> {
+            int riesgoFila = 0;
             for (int col = 0; col < 8; col++) {
                 char pieza = tablero[fila][col];
-                if (pieza == enemigo || pieza == damaEnemiga) {
-                    if (pieza == enemigo) {
-                        riesgo += buscarCapturasNormalesDesde(tablero, fila, col, colorComputadora).size();
-                    } else {
-                        riesgo += buscarCapturasDamaDesde(tablero, fila, col, colorComputadora).size();
-                    }
+                if (pieza == enemigo) {
+                    riesgoFila += buscarCapturasNormalesDesde(tablero, fila, col, colorComputadora).size();
+                } else if (pieza == damaEnemiga) {
+                    riesgoFila += buscarCapturasDamaDesde(tablero, fila, col, colorComputadora).size();
                 }
             }
-        }
-
-        return riesgo;
+            return riesgoFila;
+        }).sum();
     }
+
     private List<String> buscarCapturasNormalesDesde(char[][] tab, int fila, int col, char objetivo) {
         List<String> capturas = new ArrayList<>();
         int[] dFila = {-1, -1, 1, 1};
@@ -317,29 +335,34 @@ public class JugarDamasParalelizado extends JFrame implements JugarDamas{
         Funciones para generar todos los movimiento posibles de la computadora o jugador
     */
     public List<String> generarMovimientosPosibles(char color) {
-        List<String> capturas = new ArrayList<>();
-        List<String> movimientosSimples = new ArrayList<>();
-
-        for (int fila = 0; fila < 8; fila++) {
+        List<String> capturas = Collections.synchronizedList(new ArrayList<>());
+        List<String> movimientosSimples = Collections.synchronizedList(new ArrayList<>());
+    
+        java.util.stream.IntStream.range(0, 8).parallel().forEach(fila -> {
             for (int col = 0; col < 8; col++) {
                 char ficha = tablero[fila][col];
                 boolean esDama = (ficha == '0' && color == 'N') || (ficha == '1' && color == 'B');
-
-                if (ficha == color || (esDama)) {
-                    if (esDama) { // encuentra una dama
-                        capturas.addAll(capturasDamaMaximas(fila,col,color,tablero));
-                        if (capturas.isEmpty()) {
-                            movimientosSimples.addAll(buscarMovimientosDama(fila, col,color));
+    
+                if (ficha == color || esDama) {
+                    if (esDama) {
+                        List<String> caps = capturasDamaMaximas(fila, col, color, tablero);
+                        if (!caps.isEmpty()) {
+                            capturas.addAll(caps);
+                        } else {
+                            movimientosSimples.addAll(buscarMovimientosDama(fila, col, color));
                         }
-                    } else {// encuentra ficha normal
-                        capturas.addAll(buscarCapturasNormales(fila, col,color));
-                        if (capturas.isEmpty()) {
-                            movimientosSimples.addAll(buscarMovimientosNormales(fila, col,color));
+                    } else {
+                        List<String> caps = buscarCapturasNormales(fila, col, color);
+                        if (!caps.isEmpty()) {
+                            capturas.addAll(caps);
+                        } else {
+                            movimientosSimples.addAll(buscarMovimientosNormales(fila, col, color));
                         }
                     }
                 }
             }
-        }
+        });
+    
         return !capturas.isEmpty() ? capturas : movimientosSimples;
     }
 
