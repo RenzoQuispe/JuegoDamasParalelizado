@@ -110,9 +110,13 @@ public class Damas {
         if (colorJugador == 'N') {
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
+            long inicio0 = System.currentTimeMillis();
             for(String mov: juego[0].generarMovimientosPosibles(colorComputadora)) {
                 System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
+            long fin0 = System.currentTimeMillis();
+            long tiempoEnMilisegundos0 = fin0 - inicio0;
+            System.out.println("Tiempo generarMovimientosPosibles(): " + tiempoEnMilisegundos0 +" ms");
             System.out.println("-------------------------------------------------");
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             long inicio = System.currentTimeMillis();
@@ -138,9 +142,13 @@ public class Damas {
             // Movimientos posibles del jugador
             System.out.println("-------------------------------------------------");
             System.out.println("Tus movimientos posibles:");
+            long inicio0 = System.currentTimeMillis();
             for(String mov: juego[0].generarMovimientosPosibles(colorJugador)) {
                 System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
+            long fin0 = System.currentTimeMillis();
+            long tiempoEnMilisegundos0 = fin0 - inicio0;
+            System.out.println("Tiempo generarMovimientosPosibles(): " + tiempoEnMilisegundos0 +" ms");
             System.out.println("-------------------------------------------------");
             // Movimiento del Jugador
             System.out.print("Ingresa tu movimiento: ");
@@ -165,9 +173,13 @@ public class Damas {
             // Movimientos posibles de Computadora
             System.out.println("-------------------------------------------------");
             System.out.println("Movimientos posibles de computadora:");
+            long inicio1 = System.currentTimeMillis();
             for(String mov: juego[0].generarMovimientosPosibles(colorComputadora)) {
                 System.out.println(juego[0].convertirCoordenadasAPosicionTablero(mov));
             }
+            long fin1 = System.currentTimeMillis();
+            long tiempoEnMilisegundos1 = fin1 - inicio1;
+            System.out.println("Tiempo generarMovimientosPosibles(): " + tiempoEnMilisegundos1 +" ms");
             System.out.println("-------------------------------------------------");
             System.out.println(CELESTE+"Computadora piensa..."+RESET);
             //Computadora "piensa" su movimiento y toma la mejor decision      
